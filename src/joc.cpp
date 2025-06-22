@@ -40,14 +40,14 @@ void Joc::inicialitza(ModeJoc mode, const std::string& nomFitxerTauler, const st
         inicialitzaModusReplay();
         break;
     default:
-        std::cout << "Error: Mode de joc no v‡lid" << std::endl;
+        std::cout << "Error: Mode de joc no v√†lid" << std::endl;
         break;
     }
 
     std::cout << "Partida inicialitzada en mode: " << getStringModeJoc() << std::endl;
 }
 
-// MËtode principal que es crida cada cicle
+// M√®tode principal que es crida cada cicle
 bool Joc::actualitza(int mousePosX, int mousePosY, bool mouseStatus) {
     // Sempre dibuixem el fons i el tauler
     dibuixaFons();
@@ -59,10 +59,10 @@ bool Joc::actualitza(int mousePosX, int mousePosY, bool mouseStatus) {
         dibuixaPosicionsPossibles();
     }
 
-    // Dibuixem la informaciÛ de la partida
+    // Dibuixem la informaci√≥ de la partida
     dibuixaInformacioPartida();
 
-    // Si la partida ja ha acabat, nomÈs mostrem el resultat
+    // Si la partida ja ha acabat, nom√©s mostrem el resultat
     if (m_partidaAcabada) {
         dibuixaPantallaFinal();
         return true;
@@ -99,7 +99,7 @@ void Joc::finalitza() {
     std::cout << "Partida finalitzada." << std::endl;
 }
 
-// ========== M»TODES PRIVATS ==========
+// ========== M√àTODES PRIVATS ==========
 
 // Inicialitza mode normal
 void Joc::inicialitzaModusNormal() {
@@ -129,7 +129,7 @@ void Joc::inicialitzaModusReplay() {
     }
 }
 
-// Actualitza mode normal amb interacciÛ real del mouse
+// Actualitza mode normal amb interacci√≥ real del mouse
 bool Joc::actualitzaModusNormal(int mousePosX, int mousePosY, bool mouseStatus) {
     // Detectem click del mouse (flanc positiu)
     bool mouseClick = mouseStatus && !m_mouseAnterior;
@@ -167,7 +167,7 @@ bool Joc::actualitzaModusNormal(int mousePosX, int mousePosY, bool mouseStatus) 
                 seleccionaFitxa(posClick);
             }
             else {
-                // Click en posiciÛ no v‡lida, deseleccionem
+                // Click en posici√≥ no v√†lida, deseleccionem
                 m_fitxaSeleccionada = false;
                 m_posicionsValides.clear();
             }
@@ -177,55 +177,44 @@ bool Joc::actualitzaModusNormal(int mousePosX, int mousePosY, bool mouseStatus) 
     return false;
 }
 
-// Actualitza mode replay amb temporitzaciÛ
+
 bool Joc::actualitzaModusReplay(int mousePosX, int mousePosY, bool mouseStatus) {
-    // Reproduim moviments autom‡ticament cada segon
-    int tempsActual = SDL_GetTicks();
+    // detecta click
+    bool mouseClick = mouseStatus && !m_mouseAnterior;
+    m_mouseAnterior = mouseStatus;
 
-    if (tempsActual - m_tempsUltimMoviment > 1000) { // 1 segon entre moviments
-        m_tempsUltimMoviment = tempsActual;
-
+    if (mouseClick) {
         if (!m_cua.esBuida()) {
+            // OBTENER PR√ìXIMO MOVIMIENTO Y ELIMINARLO
             Moviment moviment = m_cua.obteSeguentMoviment();
+
+            if (!moviment.esMovimentValid()) {
+                std::cout << "Error: Moviment no valid en replay." << std::endl;
+                return false;
+            }
 
             Posicio origen = moviment.getPosicioInicial();
             Posicio desti = moviment.getPosicioFinal();
 
-            // Actualitzem el comptador de captures ABANS de moure
-            const std::vector<Posicio>& captures = moviment.getCaptures();
-            for (const Posicio& captura : captures) {
-                const Fitxa& fitxaCapturada = m_tauler.getFitxa(captura);
-                if (fitxaCapturada.getColor() == COLOR_BLANC) {
-                    m_fitxesBlanquesMortes++;
-                }
-                else {
-                    m_fitxesNegresMortes++;
-                }
-            }
-
-            // Mostrem visualment el moviment
-            m_posicioSeleccionada = origen;
+            // CONFIGURAR per utilitzar executaMoviment()
             m_fitxaSeleccionada = true;
+            m_posicioSeleccionada = origen;
+            executaMoviment(desti);
 
-            if (m_tauler.mouFitxa(origen, desti)) {
-                std::cout << "Moviment reproduÔt: " << origen << " -> " << desti << std::endl;
+            std::cout << "Moviment reprodu√Øt: " << origen << " -> " << desti << std::endl;
 
-                // Afegim a la cua per guardar al final si cal
-                m_cua.afegeixMoviment(moviment);
-
-                canviaTorn();
-                m_fitxaSeleccionada = false;
-
-                // Comprovem si la partida ha acabat
-                if (comprovaFinalPartida()) {
-                    m_partidaAcabada = true;
-                    m_guanyador = getGuanyador();
-                    return true;
-                }
+            // Verificar fin de partida
+            if (comprovaFinalPartida()) {
+                m_partidaAcabada = true;
+                m_guanyador = getGuanyador();
+                return true;
             }
         }
         else {
-            std::cout << "No queden mÈs moviments a reproduir." << std::endl;
+            // NO HAY M√ÅS MOVIMIENTOS
+            std::cout << "No queden mes moviments a reproduir." << std::endl;
+
+          
             m_partidaAcabada = true;
             return true;
         }
@@ -234,7 +223,7 @@ bool Joc::actualitzaModusReplay(int mousePosX, int mousePosY, bool mouseStatus) 
     return false;
 }
 
-// ========== M»TODES DE DIBUIX ==========
+// ========== M√àTODES DE DIBUIX ==========
 
 void Joc::dibuixaFons() {
     GraphicManager::getInstance()->drawSprite(GRAFIC_FONS, 0, 0);
@@ -272,22 +261,22 @@ void Joc::dibuixaPosicionsPossibles() {
 void Joc::dibuixaInformacioPartida() {
     GraphicManager* gm = GraphicManager::getInstance();
 
-    // TÌtol del mode
+    // T√≠tol del mode
     std::string titol = "MODE: " + getStringModeJoc();
-    gm->drawFont(FONT_WHITE_30, 250, 550, 1.0f, titol);
+    gm->drawFont(FONT_WHITE_30, 270, 610, 1.0f, titol);
 
     if (!m_partidaAcabada) {
 
         std::string torn = "TORN: ";
-        gm->drawFont(FONT_WHITE_30, 580, 100, 0.8f, torn);
+        gm->drawFont(FONT_WHITE_30, 550, 680, 0.8f, torn);
 
         // Dibuixem la fitxa del jugador actual
         IMAGE_NAME fitxaTorn = (m_jugadorActual == COLOR_BLANC) ? GRAFIC_FITXA_BLANCA : GRAFIC_FITXA_NEGRA;
-        gm->drawSprite(fitxaTorn, 650, 90);
+        gm->drawSprite(fitxaTorn, 650, 650);
 
         // Text del color
         FONT_NAME fontColor = (m_jugadorActual == COLOR_BLANC) ? FONT_WHITE_30 : FONT_RED_30;
-        gm->drawFont(fontColor, 400, 600, 1.0f, getStringColor(m_jugadorActual));
+        gm->drawFont(fontColor, 550, 680, 1.0f, getStringColor(m_jugadorActual));
 
         // Fitxes capturades
         gm->drawFont(FONT_WHITE_30, 50, 650, 0.8f, "CAPTURES:");
@@ -308,7 +297,7 @@ void Joc::dibuixaInformacioPartida() {
             gm->drawSprite(GRAFIC_FITXA_NEGRA, x, y);
         }
 
-        // Si hi ha captures obligatÚries, ho indiquem
+        // Si hi ha captures obligat√≤ries, ho indiquem
         if (m_tauler.hiHaCapturaPossible(m_jugadorActual)) {
             gm->drawFont(FONT_GREEN_30, 400, 650, 0.8f, "CAPTURA OBLIGATORIA!");
         }
@@ -318,16 +307,16 @@ void Joc::dibuixaInformacioPartida() {
 void Joc::dibuixaPantallaFinal() {
     GraphicManager* gm = GraphicManager::getInstance();
 
-    gm->drawFont(FONT_GREEN_30, 200, 650, 1.2f, "PARTIDA ACABADA!");
+    gm->drawFont(FONT_GREEN_30, 200, 350, 1.2f, "PARTIDA ACABADA!");
 
     std::string guanyador = "GUANYADOR: " + getStringColor(m_guanyador);
     FONT_NAME fontColor = (m_guanyador == COLOR_BLANC) ? FONT_WHITE_30 : FONT_RED_30;
-    gm->drawFont(fontColor, 200, 700, 1.0f, guanyador);
+    gm->drawFont(fontColor, 200, 450, 1.0f, guanyador);
 }
 
-// ========== M»TODES AUXILIARS ==========
+// ========== M√àTODES AUXILIARS ==========
 
-// Converteix coordenades del mouse a posiciÛ del tauler
+// Converteix coordenades del mouse a posici√≥ del tauler
 Posicio Joc::converteixCoordenadesMouseATauler(int mousePosX, int mousePosY) {
     int col = (mousePosX - POS_X_TAULER - CASELLA_INICIAL_X) / AMPLADA_CASELLA;
     int fila = N_FILES - 1 - ((mousePosY - POS_Y_TAULER - CASELLA_INICIAL_Y) / ALCADA_CASELLA);
@@ -364,13 +353,12 @@ void Joc::seleccionaFitxa(const Posicio& pos) {
     }
 }
 
-// Executa un moviment
+//Executar movimet
 void Joc::executaMoviment(const Posicio& desti) {
     // Obtenim el moviment complet per saber les captures
     const Fitxa& fitxa = m_tauler.getFitxa(m_posicioSeleccionada);
     const std::vector<Moviment>& moviments = fitxa.getMoviments();
     Moviment movimentExecutat;
-
     for (const Moviment& mov : moviments) {
         if (mov.getPosicioFinal() == desti) {
             movimentExecutat = mov;
@@ -378,8 +366,13 @@ void Joc::executaMoviment(const Posicio& desti) {
         }
     }
 
-    // Comprovem si hi havia captures obligatÚries ABANS de moure
+    // IMPORTANT: Obtenim la millor captura ABANS de moure la fitxa
+    // perqu√® despr√©s del moviment el tauler ja haur√† canviat
+    Moviment millorCaptura;
     bool hiHaviaCapturesPossibles = m_tauler.hiHaCapturaPossible(m_jugadorActual);
+    if (hiHaviaCapturesPossibles) {
+        millorCaptura = m_tauler.obteMillorCaptura(m_jugadorActual);
+    }
 
     // Actualitzem el comptador de captures
     const std::vector<Posicio>& captures = movimentExecutat.getCaptures();
@@ -398,17 +391,28 @@ void Joc::executaMoviment(const Posicio& desti) {
         // Guardem el moviment
         m_cua.afegeixMoviment(movimentExecutat);
 
-        // Apliquem la regla de bufat si calia capturar i no s'ha fet la millor captura
+        // Apliquem la regla de bufat
         if (hiHaviaCapturesPossibles) {
-            Moviment millorCaptura = m_tauler.obteMillorCaptura(m_jugadorActual);
+            // Comprovem dos casos de bufat:
+            // 1. No s'ha fet cap captura quan era obligatori
+            // 2. S'ha fet una captura per√≤ no la m√†xima possible
+            bool aplicarBufat = false;
 
-            // Si el moviment no Ès una captura o no Ès la millor captura
-            if (movimentExecutat.getNumCaptures() == 0 ||
-                (millorCaptura.esMovimentValid() &&
-                    millorCaptura.getNumCaptures() > movimentExecutat.getNumCaptures())) {
+            if (movimentExecutat.getNumCaptures() == 0) {
+                // Cas 1: No s'ha capturat res quan era obligatori
+                std::cout << "BUFAT! No has fet cap captura quan era obligatori!" << std::endl;
+                aplicarBufat = true;
+            }
+            else if (millorCaptura.esMovimentValid() &&
+                millorCaptura.getNumCaptures() > movimentExecutat.getNumCaptures()) {
+                // Cas 2: S'ha capturat per√≤ no el m√†xim possible
+                std::cout << "BUFAT! No has fet la captura maxima!" << std::endl;
+                std::cout << "Captures possibles: " << millorCaptura.getNumCaptures()
+                    << ", captures fetes: " << movimentExecutat.getNumCaptures() << std::endl;
+                aplicarBufat = true;
+            }
 
-                std::cout << "BUFAT! No has fet la captura obligatÚria o m‡xima!" << std::endl;
-
+            if (aplicarBufat) {
                 // Eliminem la fitxa que acabem de moure
                 m_tauler.eliminaFitxa(desti);
 
@@ -420,7 +424,7 @@ void Joc::executaMoviment(const Posicio& desti) {
                     m_fitxesNegresMortes++;
                 }
 
-                // Actualitzem moviments desprÈs del bufat
+                // Actualitzem moviments despr√©s del bufat
                 m_tauler.actualitzaMovimentsValids();
             }
         }
@@ -433,8 +437,7 @@ void Joc::executaMoviment(const Posicio& desti) {
         m_posicionsValides.clear();
     }
 }
-
-// Comprova si una posiciÛ est‡ entre les v‡lides
+// Comprova si una posici√≥ est√† entre les v√†lides
 bool Joc::esPosicioValida(const Posicio& pos) {
     for (const Posicio& posValida : m_posicionsValides) {
         if (pos == posValida) {
@@ -444,7 +447,7 @@ bool Joc::esPosicioValida(const Posicio& pos) {
     return false;
 }
 
-// Canvia el torn al seg¸ent jugador
+// Canvia el torn al seg√ºent jugador
 void Joc::canviaTorn() {
     m_jugadorActual = (m_jugadorActual == COLOR_BLANC) ? COLOR_NEGRE : COLOR_BLANC;
     m_tauler.actualitzaMovimentsValids();
@@ -475,13 +478,13 @@ bool Joc::comprovaFinalPartida() {
         }
     }
 
-    // La partida acaba si un jugador no tÈ fitxes o no pot moure
+    // La partida acaba si un jugador no t√© fitxes o no pot moure
     return (fitxesBlanques == 0 || fitxesNegres == 0 ||
         (m_jugadorActual == COLOR_BLANC && !potMoureBlanques) ||
         (m_jugadorActual == COLOR_NEGRE && !potMoureNegres));
 }
 
-// ObtÈ el guanyador
+// Obt√© el guanyador
 ColorFitxa Joc::getGuanyador() {
     int fitxesBlanques = 0, fitxesNegres = 0;
 
@@ -498,17 +501,17 @@ ColorFitxa Joc::getGuanyador() {
     if (fitxesBlanques == 0) return COLOR_NEGRE;
     if (fitxesNegres == 0) return COLOR_BLANC;
 
-    // Si alg˙ no pot moure, perd
+    // Si alg√∫ no pot moure, perd
     return (m_jugadorActual == COLOR_BLANC) ? COLOR_NEGRE : COLOR_BLANC;
 }
 
-// Comprova si una fitxa Ès del jugador actual
+// Comprova si una fitxa √©s del jugador actual
 bool Joc::esFitxaDelJugadorActual(const Posicio& pos) {
     const Fitxa& fitxa = m_tauler.getFitxa(pos);
     return fitxa.esFitxaJugador() && fitxa.getColor() == m_jugadorActual;
 }
 
-// ObtÈ la imatge corresponent a una fitxa
+// Obt√© la imatge corresponent a una fitxa
 IMAGE_NAME Joc::obteImatgeFitxa(const Fitxa& fitxa) {
     if (fitxa.getColor() == COLOR_BLANC) {
         return (fitxa.getTipus() == FITXA_NORMAL) ? GRAFIC_FITXA_BLANCA : GRAFIC_DAMA_BLANCA;
